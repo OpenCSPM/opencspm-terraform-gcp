@@ -161,7 +161,7 @@ resource "google_cloud_run_service" "cai-export" {
       container_concurrency = 1
       timeout_seconds       = 900
       containers {
-        image = var.cai-exporter-image
+        image = var.cai_exporter_image
         resources {
           limits = {
             "cpu"    = var.cai_cloud_run_cpu_limit
@@ -240,7 +240,7 @@ resource "google_cloud_run_service" "iam-export" {
       container_concurrency = 1
       timeout_seconds       = 900
       containers {
-        image = var.iam-exporter-image
+        image = var.iam_exporter_image
         resources {
           limits = {
             "cpu"    = var.iam_cloud_run_cpu_limit

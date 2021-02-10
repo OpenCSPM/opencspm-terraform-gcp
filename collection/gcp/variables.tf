@@ -20,12 +20,12 @@ variable "collection_bucket_prefix" {
   type        = string
 }
 
-variable "cai-exporter-image" {
+variable "cai_exporter_image" {
   description = "The image path and tag"
   type        = string
 }
 
-variable "iam-exporter-image" {
+variable "iam_exporter_image" {
   description = "The image path and tag"
   type        = string
 }
