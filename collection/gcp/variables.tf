@@ -20,6 +20,11 @@ variable "collection_bucket_prefix" {
   type        = string
 }
 
+variable "backup_bucket_prefix" {
+  description = "The prefix for the bucket name.  The suffix is 'opencspm'"
+  type        = string
+}
+
 variable "cai_exporter_image" {
   description = "The image path and tag"
   type        = string
@@ -72,6 +77,7 @@ variable "enabled_services" {
     "cloudasset.googleapis.com",
     "cloudscheduler.googleapis.com",
     "monitoring.googleapis.com",
+    "dns.googleapis.com",
   ]
 }
 variable "project_labels" {
@@ -92,6 +98,11 @@ variable "iam_collection_crontab" {
   default     = "10 4 * * *"
 }
 variable "collection_bucket_location" {
+  description = "The location of the bucket.  US or EU are common choices"
+  default     = "US"
+  type        = string
+}
+variable "backup_bucket_location" {
   description = "The location of the bucket.  US or EU are common choices"
   default     = "US"
   type        = string
@@ -151,7 +162,7 @@ variable "vm_instance_disk_image" {
 variable "vm_instance_disk_size" {
   description = ""
   type        = string
-  default     = "50"
+  default     = "120"
 }
 variable "vm_instance_scopes" {
   description = ""
@@ -172,4 +183,16 @@ variable "vm_instance_tags" {
   description = "Network tags to add to the OpenCSPM GCE Instance"
   type        = list
   default     = ["opencspm"]
+}
+
+variable "enable_darkbit_administrators" {
+  description = "Enable Darkbit Administrator access"
+  type        = bool
+  default     = false
+}
+
+variable "darkbit_administrator_group" {
+  description = "The group to grant IAM access to manage the entire project"
+  type        = string
+  default     = "auditors@darkbit.io"
 }

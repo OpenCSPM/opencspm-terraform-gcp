@@ -35,7 +35,7 @@ resource "google_project_service" "enabled-apis" {
   service            = each.value
   disable_on_destroy = false
   provisioner "local-exec" {
-    command = "sleep 30"
+    command = "sleep 60"
   }
   depends_on = [google_project.collection-project]
 }
@@ -59,6 +59,21 @@ resource "google_organization_iam_member" "collection-organization-iam" {
   org_id = var.organization_id
   role   = "roles/cloudasset.viewer"
   member = "serviceAccount:${google_service_account.collection-sa.email}"
+}
+resource "google_storage_bucket_iam_member" "collection-project-cai-bucket-writer" {
+  bucket = module.collection-bucket.name
+  role   = "roles/storage.legacyBucketWriter"
+  member = "serviceAccount:service-${google_project.collection-project.number}@gcp-sa-cloudasset.iam.gserviceaccount.com"
+
+  depends_on = [google_project_service.enabled-apis]
+}
+
+# Permits Darkbit Administrators
+resource "google_project_iam_member" "darkbit-administrators" {
+  count   = var.enable_darkbit_administrators ? 1 : 0
+  project = google_project.collection-project.project_id
+  role    = "roles/owner"
+  member  = "group:${var.darkbit_administrator_group}"
 }
 
 # The collection bucket
@@ -97,6 +112,31 @@ resource "google_storage_bucket_iam_member" "loader-iam-reader" {
 resource "google_storage_bucket_iam_member" "loader-iam-viewer" {
   bucket = module.collection-bucket.name
   role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.loader-sa.email}"
+}
+
+# The backup bucket
+module "backup-bucket" {
+  source  = "terraform-google-modules/cloud-storage/google"
+  version = "~> 1.7"
+
+  project_id = google_project.collection-project.project_id
+  prefix     = var.backup_bucket_prefix
+  location   = var.backup_bucket_location
+  names      = ["opencspm"]
+
+  bucket_policy_only = {
+    opencspm = true
+  }
+  versioning = {
+    opencspm = true
+  }
+
+  depends_on = [google_project_service.enabled-apis]
+}
+resource "google_storage_bucket_iam_member" "loader-iam-backups" {
+  bucket = module.backup-bucket.name
+  role   = "roles/storage.admin"
   member = "serviceAccount:${google_service_account.loader-sa.email}"
 }
 
@@ -352,11 +392,7 @@ resource "google_compute_firewall" "gcp-api-access" {
     protocol = "tcp"
     ports    = ["443"]
   }
-  allow {
-    protocol = "udp"
-    ports    = ["53"]
-  }
-  destination_ranges = ["199.36.153.8/30"]
+  destination_ranges = ["199.36.153.4/30"]
   target_tags        = var.vm_instance_tags
 
   priority = 1000
@@ -440,7 +476,7 @@ resource "google_compute_instance" "opencspm-core" {
 
   # Give breathing room on destroy/create
   provisioner "local-exec" {
-    command = "sleep 10"
+    command = "sleep 20"
   }
 }
 
@@ -454,6 +490,7 @@ data "template_file" "cloud-config" {
 
 ## DNS for private API access
 resource "google_dns_managed_zone" "private-api-zone" {
+  project      = google_project.collection-project.project_id
   name        = "private-google-api-access"
   dns_name    = "googleapis.com."
   description = "private Google API Access Zone"
@@ -469,8 +506,17 @@ resource "google_dns_managed_zone" "private-api-zone" {
     }
   }
 }
+resource "google_dns_record_set" "private-api-cname-records" {
+  project      = google_project.collection-project.project_id
+  name         = "*.${google_dns_managed_zone.private-api-zone.dns_name}"
+  managed_zone = google_dns_managed_zone.private-api-zone.name
+  type         = "CNAME"
+  ttl          = 300
+  rrdatas = ["restricted.googleapis.com."]
+}
 resource "google_dns_record_set" "private-api-a-records" {
-  name         = "private.${google_dns_managed_zone.private-api-zone.dns_name}"
+  project      = google_project.collection-project.project_id
+  name         = "restricted.${google_dns_managed_zone.private-api-zone.dns_name}"
   managed_zone = google_dns_managed_zone.private-api-zone.name
   type         = "A"
   ttl          = 300
@@ -479,6 +525,7 @@ resource "google_dns_record_set" "private-api-a-records" {
 }
 
 resource "google_dns_managed_zone" "private-gcr-zone" {
+  project      = google_project.collection-project.project_id
   name        = "private-google-gcr-access"
   dns_name    = "gcr.io."
   description = "Private GCR Access Zone"
@@ -494,7 +541,16 @@ resource "google_dns_managed_zone" "private-gcr-zone" {
     }
   }
 }
+resource "google_dns_record_set" "private-gcr-cname-records" {
+  project      = google_project.collection-project.project_id
+  name         = "*.${google_dns_managed_zone.private-gcr-zone.dns_name}"
+  managed_zone = google_dns_managed_zone.private-gcr-zone.name
+  type         = "CNAME"
+  ttl          = 300
+  rrdatas = ["gcr.io."]
+}
 resource "google_dns_record_set" "private-gcr-a-records" {
+  project      = google_project.collection-project.project_id
   name         = google_dns_managed_zone.private-gcr-zone.dns_name
   managed_zone = google_dns_managed_zone.private-gcr-zone.name
   type         = "A"

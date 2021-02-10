@@ -30,7 +30,9 @@ write_files:
     version: "3.7"
     services:
       app:
-        image: gcr.io/google-samples/hello-app:1.0
+        image: gcr.io/google-samples/hello-app:2.0
+        ports:
+          - "8080:8080"
 - path: /etc/systemd/system/composer.service
   permissions: 0644
   owner: root
