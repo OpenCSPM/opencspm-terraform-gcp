@@ -5,13 +5,13 @@ variable "cluster_project_id" {
   type        = string
 }
 
-variable "collection_bucket_name" {
-  description = "The OpenCSPM collection bucket name"
+variable "collection_project_id" {
+  description = "The project id where the collection bucket lives"
   type        = string
 }
 
-variable "k8s-cai-exporter-image" {
-  description = "The image path and tag"
+variable "collection_bucket_name" {
+  description = "The OpenCSPM collection bucket name"
   type        = string
 }
 

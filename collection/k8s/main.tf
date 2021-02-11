@@ -29,3 +29,10 @@ resource "google_storage_bucket_iam_member" "opencspm-exporter-member" {
   role   = var.collection_bucket_iam_role
   member = format("serviceAccount:%s", google_service_account.opencspm-exporter-sa.email)
 }
+// Attach OpenCSPM collection bucket KMS access permissions to the Google SA.
+resource "google_project_iam_member" "opencspm-kms-exporter-member" {
+  project = var.collection_project_id
+
+  role   = "roles/cloudkms.cryptoKeyEncrypter"
+  member = format("serviceAccount:%s", google_service_account.opencspm-exporter-sa.email)
+}

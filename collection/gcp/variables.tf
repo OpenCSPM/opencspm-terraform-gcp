@@ -78,6 +78,7 @@ variable "enabled_services" {
     "cloudscheduler.googleapis.com",
     "monitoring.googleapis.com",
     "dns.googleapis.com",
+    "cloudkms.googleapis.com",
   ]
 }
 variable "project_labels" {
@@ -102,10 +103,40 @@ variable "collection_bucket_location" {
   default     = "US"
   type        = string
 }
+variable "collection_bucket_lifecycle_storage_class_downgrade_name" {
+  description = "Collection bucket lifecycle policy.  Downgraded storage class name"
+  default     = "NEARLINE"
+  type        = string
+}
+variable "collection_bucket_lifecycle_storage_class_downgrade_age_in_days" {
+  description = "Collection bucket lifecycle policy.  Downgraded storage class after N days"
+  default     = 60
+  type        = number
+}
+variable "collection_bucket_lifecycle_delete_all_data_after_num_days" {
+  description = "Collection bucket lifecycle policy.  Delete data after N days"
+  default     = 730
+  type        = number
+}
 variable "backup_bucket_location" {
   description = "The location of the bucket.  US or EU are common choices"
   default     = "US"
   type        = string
+}
+variable "backup_bucket_lifecycle_storage_class_downgrade_name" {
+  description = "Backup bucket lifecycle policy.  Downgraded storage class name"
+  default     = "NEARLINE"
+  type        = string
+}
+variable "backup_bucket_lifecycle_storage_class_downgrade_age_in_days" {
+  description = "Backup bucket lifecycle policy.  Downgraded storage class after N days"
+  default     = 10
+  type        = number
+}
+variable "backup_bucket_lifecycle_delete_all_data_after_num_days" {
+  description = "Backup bucket lifecycle policy.  Delete data after N days"
+  default     = 365
+  type        = number
 }
 
 ## Collection - Cloud Run General
@@ -140,27 +171,27 @@ variable "iam_cloud_run_mem_limit" {
 
 ## GCE VM - OpenCSPM Instance
 variable "vm_instance_zone" {
-  description = "Zone to run the instance in.  Must be inside region"
+  description = "Zone to run the OpenCSPM instance in.  Must be inside region"
   type        = string
   default     = "us-central1-a"
 }
 variable "vm_instance_type" {
-  description = "Instance Type.  Recommend 2+ cpu, 8+GB memory"
+  description = "OpenCSPM VM instance type.  Recommend 2+ cpu, 8+GB memory"
   type        = string
   default     = "e2-standard-2"
 }
 variable "vm_instance_disk_type" {
-  description = ""
+  description = "Type of disk for the OpenCSPM VM. pd-standard or pd-ssd"
   type        = string
   default     = "pd-standard"
 }
 variable "vm_instance_disk_image" {
-  description = ""
+  description = "Full path to the OpenCSPM VM's disk image."
   type        = string
   default     = "projects/cos-cloud/global/images/family/cos-stable"
 }
 variable "vm_instance_disk_size" {
-  description = ""
+  description = "Size in GB of the OpenCSPM VM's disk"
   type        = string
   default     = "120"
 }
@@ -169,7 +200,7 @@ variable "vm_instance_scopes" {
   type        = list
   default = [
     "https://www.googleapis.com/auth/source.read_only",
-    "https://www.googleapis.com/auth/devstorage.read_only",
+    "https://www.googleapis.com/auth/devstorage.read_write",
     "https://www.googleapis.com/auth/logging.write",
     "https://www.googleapis.com/auth/monitoring.write",
   ]
@@ -185,8 +216,50 @@ variable "vm_instance_tags" {
   default     = ["opencspm"]
 }
 
+variable "kms_multi_region_name" {
+  description = "The multi-region name where KMS should be made.  Needs to align with the GCS multi-region. See: https://cloud.google.com/kms/docs/locations#multi_regional"
+  type        = string
+  default     = "us"
+}
+
+variable "collection_kms_key_ring_prefix" {
+  description = "The prefix of the kms keyring name used to encrypt collected data in the collection GCS bucket"
+  type        = string
+  default     = "opencspm-collection"
+}
+
+variable "collection_kms_key_name" {
+  description = "String value to use for the name of the collection KMS crypto key."
+  default     = "opencspm-collection-key"
+  type        = string
+}
+
+variable "collection_kms_key_rotation" {
+  description = "String value to use for the name of the collection KMS crypto key."
+  default     = "604800s"
+  type        = string
+}
+
+variable "backup_kms_key_ring_prefix" {
+  description = "The prefix of the kms keyring name used to encrypt backups in the backup GCS bucket"
+  type        = string
+  default     = "opencspm-backup"
+}
+
+variable "backup_kms_key_name" {
+  description = "String value to use for the name of the KMS crypto key."
+  default     = "opencspm-backup-key"
+  type        = string
+}
+
+variable "backup_kms_key_rotation" {
+  description = "String value to use for the name of the backup KMS crypto key."
+  default     = "604800s"
+  type        = string
+}
+
 variable "enable_darkbit_administrators" {
-  description = "Enable Darkbit Administrator access"
+  description = "Boolean to enable Darkbit Administrator access to the collection project"
   type        = bool
   default     = false
 }
