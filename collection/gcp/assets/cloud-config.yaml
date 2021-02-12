@@ -26,6 +26,19 @@ write_files:
     if [ ! -d /home/composer/opencspm ]; then
       cd /home/composer
       git clone https://github.com/OpenCSPM/opencspm.git
+
+      mkdir -p /home/composer/opencspm/config
+      touch /home/composer/opencspm/config/config.yaml
+
+    cat << EOF > /home/composer/opencspm/config/config.yaml
+    ---
+    db:
+      host: redis
+      port: 6379
+    buckets:
+      - gs://${collection_bucket}
+    EOF
+
     fi
     mkdir -p /home/composer/opencspm-controls
     if [ ! -d /home/composer/opencspm-controls/opencspm-darkbit-community-controls ]; then

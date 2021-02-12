@@ -122,6 +122,6 @@ data "template_file" "cloud-config" {
   template = file(local.cloud_init)
 
   vars = {
-    custom_var = "test"
+    collection_bucket = module.collection-bucket.name
   }
 }
