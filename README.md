@@ -27,6 +27,8 @@ Note: The in-cluster resources are deployed via [this manifest template script](
 9. **GCP CAI Collection Org Level IAM** - (collection.tf) An organization-level binding of `roles.cloudasset.viewer` on the `Collection Service Account` necessary to gather the [Cloud Asset Inventory](https://cloud.google.com/asset-inventory/docs/overview) of the entire organization.
 10. **Cloud Run - GCP IAM** - (collection.tf) Using the `gcr.io/opencspm/gcp-iam-exporter` image, fetches a copy of the latest export of built-in GCP IAM Roles from [https://github.com/darkbitio/gcp-iam-role-permissions/blob/master/gcp_roles_cai.json](https://github.com/darkbitio/gcp-iam-role-permissions/blob/master/gcp_roles_cai.json) and writes/encrypts it to the `Data Collection GCS storage bucket`.
 
+Optional:
+
 14. **External Access** - (iam.tf) Optional granting of permissions to Darkbit to enforce 2FA access using remote [SSH-over-IAP](https://cloud.google.com/iap/docs/using-tcp-forwarding) administration of the `Collection Project` without exposing an SSH daemon via public IP.
 
 #### In-cluster K8s Exporter [Manifest](https://github.com/OpenCSPM/opencspm/blob/main/collection/k8s-cai-exporter/cronjob.yaml.sh)
