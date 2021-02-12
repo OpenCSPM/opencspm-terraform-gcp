@@ -114,3 +114,28 @@ resource "google_compute_firewall" "gcp-api-access" {
     metadata = "INCLUDE_ALL_METADATA"
   }
 }
+
+## Allow Egress via NAT
+resource "google_compute_router" "opencspm-router" {
+  project = google_project.collection-project.project_id
+  name    = "opencspm-router"
+  region  = google_compute_subnetwork.opencspm-subnet.region
+  network = google_compute_network.opencspm-network.id
+
+  bgp {
+    asn = 64514
+  }
+}
+resource "google_compute_router_nat" "opencspm-nat" {
+  project = google_project.collection-project.project_id
+  name                               = "opencspm-nat"
+  router                             = google_compute_router.opencspm-router.name
+  region                             = google_compute_router.opencspm-router.region
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
