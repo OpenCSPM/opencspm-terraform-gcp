@@ -85,7 +85,7 @@ module "prod-cluster" {
   # The generated project_id from the "opencspm-deployment" module where the data collection bucket resides. e.g. "opencspm-collection-672c"
   collection_project_id  = "<collection_project_id>"
   # The full name of the data collection bucket. e.g. "db-collection-us-opencspm"
-  collection_bucket_name = "<full_collection_bucket_name>"\
+  collection_bucket_name = "<full_collection_bucket_name>"
   # The namespace and service account name where the k8s-cai-exporter cronjob is running.
   k8s_namespace          = "opencspm"
   k8s_sa_name            = "opencspm"
