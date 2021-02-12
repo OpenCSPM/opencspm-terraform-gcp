@@ -16,23 +16,22 @@ write_files:
         "max-size": "1024m"
       }
     }
-- path: /home/composer/auth.sh
+- path: /home/composer/init.sh
   permissions: 0755
   owner: composer
   content: |
     TOKEN=$(curl -s -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token)
     ACCESS=$(echo $${TOKEN} | grep --extended-regexp --only-matching "(ya29.[0-9a-zA-Z._-]*)")
     /usr/bin/docker login -u oauth2accesstoken -p "$${ACCESS}" https://gcr.io
-- path: /home/composer/docker-compose.yml
-  permissions: 0644
-  owner: composer
-  content: |
-    version: "3.7"
-    services:
-      app:
-        image: gcr.io/google-samples/hello-app:2.0
-        ports:
-          - "8080:8080"
+    if [ ! -d /home/composer/opencspm ]; then
+      cd /home/composer
+      git clone https://github.com/OpenCSPM/opencspm.git
+    fi
+    mkdir -p /home/composer/opencspm-controls
+    if [ ! -d /home/composer/opencspm-controls/opencspm-darkbit-community-controls ]; then
+      cd /home/composer/opencspm-controls
+      git clone https://github.com/OpenCSPM/opencspm-darkbit-community-controls.git
+    fi
 - path: /etc/systemd/system/composer.service
   permissions: 0644
   owner: root
@@ -44,9 +43,9 @@ write_files:
     [Service]
     User=composer
     Environment="HOME=/home/composer"
-    ExecStartPre=sh /home/composer/auth.sh  
-    ExecStart=/usr/bin/docker run --rm -v  /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer" docker/compose:1.27.4 up
-    ExecStop=/usr/bin/docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer" docker/compose:1.27.4 rm -f
+    ExecStartPre=sh /home/composer/init.sh
+    ExecStart=/usr/bin/docker run --rm -v  /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer/opencspm/docker" docker/compose:1.27.4 up
+    ExecStop=/usr/bin/docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer/opencspom/docker" docker/compose:1.27.4 rm -f
     Restart=on-failure
     RestartSec=10
     [Install]
