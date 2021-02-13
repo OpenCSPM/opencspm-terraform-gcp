@@ -25,11 +25,15 @@ write_files:
     /usr/bin/docker login -u oauth2accesstoken -p "$${ACCESS}" https://gcr.io
     if [ ! -d /home/composer/opencspm ]; then
       cd /home/composer
-      git clone https://github.com/OpenCSPM/opencspm.git
+      n=0
+      until [ $n -ge 5 ]
+      do
+         git clone https://github.com/OpenCSPM/opencspm.git && break
+         n=$[$n+1]
+         sleep 5
+      done
 
       mkdir -p /home/composer/opencspm/config
-      touch /home/composer/opencspm/config/config.yaml
-
     cat << EOF > /home/composer/opencspm/config/config.yaml
     ---
     db:
@@ -43,7 +47,13 @@ write_files:
     mkdir -p /home/composer/opencspm-controls
     if [ ! -d /home/composer/opencspm-controls/opencspm-darkbit-community-controls ]; then
       cd /home/composer/opencspm-controls
-      git clone https://github.com/OpenCSPM/opencspm-darkbit-community-controls.git
+      n=0
+      until [ $n -ge 5 ]
+      do
+         git clone https://github.com/OpenCSPM/opencspm-darkbit-community-controls.git && break
+         n=$[$n+1]
+         sleep 5
+      done
     fi
 - path: /etc/systemd/system/composer.service
   permissions: 0644
@@ -61,6 +71,7 @@ write_files:
     ExecStop=/usr/bin/docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer/opencspom/docker" docker/compose:1.27.4 rm -f
     Restart=on-failure
     RestartSec=10
+    TimeoutSec=600
     [Install]
     WantedBy=multi-user.target
 runcmd:
