@@ -48,7 +48,7 @@ Consuming these [Terraform modules](https://learn.hashicorp.com/tutorials/terraf
 # Add the following to your new or existing Terraform workspace.
 module "opencspm-deployment" {
   # A versioned reference to the module repo and subpath
-  source = "github.com/opencspm/opencspm-terraform-gcp.git//collection/gcp?ref=0.1.4"
+  source = "github.com/opencspm/opencspm-terraform-gcp.git//collection/gcp?ref=0.1.5"
 
   # Obtain the organization number via gcloud organizations list
   organization_id = "123456789101112"
@@ -78,7 +78,7 @@ The following shows how to use the `collection/k8s` module to deploy the necessa
 # Add the following to your existing Terraform workspace/project where the GKE cluster is managed
 module "prod-cluster" {
   # A versioned reference to the module repo and subpath
-  source = "github.com/opencspm/opencspm-terraform-gcp.git//collection/k8s?ref=0.1.4"
+  source = "github.com/opencspm/opencspm-terraform-gcp.git//collection/k8s?ref=0.1.5"
 
   # A project id where the GKE cluster(s) lives. e.g. "my-gke-project"
   cluster_project_id     = "<this_project_id>"
