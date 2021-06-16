@@ -58,7 +58,7 @@ write_files:
     Environment="HOME=/home/composer"
     ExecStartPre=sh /home/composer/init.sh
     ExecStart=/usr/bin/docker run --rm -v  /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer/opencspm/docker" docker/compose:1.27.4 up
-    ExecStop=/usr/bin/docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer/opencspom/docker" docker/compose:1.27.4 rm -f
+    ExecStop=/usr/bin/docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "/home/composer/.docker:/root/.docker" -v "/home/composer:/home/composer" -w="/home/composer/opencspm/docker" docker/compose:1.27.4 down
     Restart=on-failure
     RestartSec=10
     [Install]
